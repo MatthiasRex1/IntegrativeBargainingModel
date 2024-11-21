@@ -3,7 +3,7 @@ import pandas as pd
 import copy
 import time
 
-
+'''
 class GainsLosses:
     def __init__(self,country):
         self.gain=0
@@ -14,25 +14,18 @@ class GainsLosses:
         self.gain=gains
         self.loss=losses
 
+'''
 
-
-
-class GNLvector:
-    def __init__(self,count,resources):
-        self.resources=resources
-        self.countries=count
-        self.vector=[]
-
-    def vectorcreate(self):
-        gainres=self.resources
-        lossres=self.resources
-        x=random.randint(0,len(self.countries)-1)
+def vector_create(countries,resources):
+        gainres=resources
+        lossres=resources
+        x=random.randint(0,len(countries)-1)
         xused=[]
-        self.vector=[GainsLosses(self.countries[c]) for c in range(len(self.countries)) ]
-        for i in range (len(self.countries)):
+        vector=[[countries[c],0,0] for c in range(len(countries)) ]
+        for i in range (len(countries)):
             bl=True
             while  bl:
-                x=random.randint(0,len(self.countries)-1)
+                x=random.randint(0,len(countries)-1)
                 if not (x in xused):
                     bl=False
 
@@ -43,13 +36,31 @@ class GNLvector:
             gainres-=g
             l=random.randint(0,lossres)
             lossres-=l
-            self.vector[x].gnlcreate(g,l)
+            vector[x][1]=g
+            vector[x][2]=l
+        return vector
+def whichcountry(country,vector):
+        for i in range(len(vector)):
+            #print(country,
+            if country==vector[i][0]:
+                return i
+'''
+class GNLvector:
+    def __init__(self,count,resources):
+        self.resources=resources
+        self.countries=count
+        self=[]
+
+    def vectorcreate(self):
+        self=vecc1_(self.resources,self,self.countries)
+        
 
     def whichcountry(self,country):
-        for i in range(len(self.vector)):
-            if country==self.vector[i].country:
+        for i in range(len(self)):
+            #print(country,
+            if country==self[i][0]:
                 return i
-
+'''
 
 def isagreement(neg):
         d=0
@@ -61,16 +72,16 @@ def isagreement(neg):
             if neg[i].isout:
                 continue
             for g in range(len(neg[i].negotiator.vector)):
-                if (dopvec[g].gain!=neg[i].negotiator.vector[g].gain)or(dopvec[g].loss!=neg[i].negotiator.vector[g].loss):
+                if (dopvec[g][1]!=neg[i].negotiator.vector[g][1])or(dopvec[g][2]!=neg[i].negotiator.vector[g][2]):
                     return False
         return True
 
 def copyvec(vec):
-    cop=[GainsLosses(vec[x].country) for x in range(len(vec)) ]
+    cop=[[vec[x][0],0,0] for x in range(len(vec)) ]
     for i in range (len(vec)):
 
-        cop[i].gain=vec[i].gain
-        cop[i].loss=vec[i].loss
+        cop[i][1]=vec[i][1]
+        cop[i][2]=vec[i][2]
     return cop
 
 class Negotiator:
@@ -92,8 +103,10 @@ class Negotiator:
             for g in range(len(self.newg)):
                 ng+=self.newg[g][i]
                 nl+=self.newl[g][i]
-            self.vector[i].gain=ng//(len(self.newg))
-            self.vector[i].loss=nl//(len(self.newl))
+            self.vector[i][1]=ng//(len(self.newg))
+            self.vector[i][2]=nl//(len(self.newl))
+        self.newg=[]
+        self.newl=[]
 
     def communicate(self,neg):
         new_vecg1=[]
@@ -109,7 +122,7 @@ class Negotiator:
 
         k=0.5
         for i in range (len(self.vector)):
-            diff=abs(self.vector[i].gain-neg.vector[i].gain)
+            diff=abs(self.vector[i][1]-neg.vector[i][1])
             if self.pos<neg.pos:
                 diff1=diff+(diff*(1-posdiv)*k)
                 diff2=diff-(diff*(1-posdiv)*k)
@@ -118,16 +131,16 @@ class Negotiator:
                 diff2=diff+(diff*(1-posdiv)*k)
             if self.pos==neg.pos:
                 diff1=diff2=diff
-            if self.vector[i].gain<neg.vector[i].gain:
+            if self.vector[i][1]<neg.vector[i][1]:
                 diff1=-diff1
                 diff2=-diff2
 
 
-            new_vecg1.append(self.vector[i].gain-diff1//2)
-            new_vecg2.append(neg.vector[i].gain+diff2//2)
+            new_vecg1.append(self.vector[i][1]-diff1//2)
+            new_vecg2.append(neg.vector[i][1]+diff2//2)
 
         for i in range(len(self.vector)):
-            diff=abs(self.vector[i].loss-neg.vector[i].loss)
+            diff=abs(self.vector[i][2]-neg.vector[i][2])
             if self.pos<neg.pos:
                 diff1=diff+(diff*(1-posdiv)*k)
                 diff2=diff-(diff*(1-posdiv)*k)
@@ -136,12 +149,12 @@ class Negotiator:
                 diff2=diff+(diff*(1-posdiv)*k)
             if self.pos==neg.pos:
                 diff1=diff2=diff
-            if self.vector[i].loss<neg.vector[i].loss:
+            if self.vector[i][2]<neg.vector[i][2]:
                 diff2=-diff2
                 diff1=-diff1
 
-            new_vecl1.append(self.vector[i].loss-diff1//2)
-            new_vecl2.append(neg.vector[i].loss+diff2//2)
+            new_vecl1.append(self.vector[i][2]-diff1//2)
+            new_vecl2.append(neg.vector[i][2]+diff2//2)
         return new_vecg1,new_vecg2,new_vecl1,new_vecl2
 
 
@@ -154,12 +167,12 @@ def vectdiff(vec1,vec2,cout):
         if i in cout:
             continue
         #x+=abs((vec1[i].gain-vec2[i].gain))
-        x+=(vec1[i].gain-vec2[i].gain)**2
+        x+=(vec1[i][1]-vec2[i][1])**2
     x=x**0.5
     for i in range(len(vec1)):
         if i in cout:
             continue
-        y+=(vec1[i].loss-vec2[i].loss)**2
+        y+=(vec1[i][2]-vec2[i][2])**2
     y=y**0.5
     return x,y
 
@@ -183,8 +196,8 @@ class Country:
 
 
         for i in range(100):
-            self.gnl.append(GNLvector(count,res))
-            self.gnl[i].vectorcreate()
+            self.gnl.append(vector_create(count,res))
+            #self.gnl[i]create()
 
 
 
@@ -194,30 +207,31 @@ class Country:
 
         for i in range(len(self.gnl)):
 
-            dopi=GNLvector(self.gnl[i].countries,self.gnl[i].resources)
-            dopi.vector=copyvec(self.gnl[i].vector)
-            #copyvec(self.gnl[i].vector)
+            #dopi=#vector_create(self.gnl[i].countries,self.gnl[i].resources)
+            
+            dopi=copyvec(self.gnl[i])
+            #copyvec(self.gnl[i])
             #self.gnl[i]
             dopgnl=i
             for g in range(i,len(self.gnl)):
-                if self.gnl[g].vector[self.gnl[g].whichcountry(country)].gain-self.gnl[g].vector[self.gnl[g].whichcountry(country)].loss>dopi.vector[dopi.whichcountry(country)].gain-dopi.vector[dopi.whichcountry(country)].loss:
-                    dopi=GNLvector(self.gnl[g].countries,self.gnl[g].resources)
-                    dopi.vector=copyvec(self.gnl[g].vector)
+                if self.gnl[g][whichcountry(country,self.gnl[g])][1]-self.gnl[g][whichcountry(country,self.gnl[g])][2]>dopi[whichcountry(country,dopi)][1]-dopi[whichcountry(country,dopi)][2]:
+                    #dopi=GNLvector(self.gnl[g].countries,self.gnl[g].resources)
+                    dopi=copyvec(self.gnl[g])
                     dopgnl=g
 
 
-            self.gnl[dopgnl].vector=copyvec(self.gnl[i].vector)
-            self.gnl[i].vector=copyvec(dopi.vector)
+            self.gnl[dopgnl]=copyvec(self.gnl[i])
+            self.gnl[i]=copyvec(dopi)
 
     def zapis(self,d,sd):
         vv=[]
         gg=[]
         ll=[]
         for i in range(len(self.gnl)):
-            for g in range(len(self.gnl[i].vector)):
+            for g in range(len(self.gnl[i])):
                 vv.append(i)
-                gg.append(self.gnl[i].vector[g].gain)
-                ll.append(self.gnl[i].vector[g].loss)
+                gg.append(self.gnl[i][g][1])
+                ll.append(self.gnl[i][g][2])
         dic={'vector':vv,'gain':gg,'loss':ll}
         data=pd.DataFrame(dic)
         data.to_csv(str(sd)+'__'+str(d)+'.csv',index=False,sep=';')
@@ -227,9 +241,9 @@ class Country:
         self.negotiator=0
         if self.isfirst:
             self.isfirst=False
-            self.negotiator =Negotiator(self.pos,self.gnl[0].vector)
+            self.negotiator =Negotiator(self.pos,self.gnl[0])
             return
-        self.negotiator=Negotiator(self.pos,self.gnl[vec].vector)
+        self.negotiator=Negotiator(self.pos,self.gnl[vec])
 
 
 
@@ -238,22 +252,22 @@ class Country:
         listofvector=[]
         k=self.iner/100
         for i in range(len(self.gnl)):
-            if self.gnl[i].vector[self.gnl[i].whichcountry(country)].gain-self.gnl[i].vector[self.gnl[i].whichcountry(country)].loss>0:
-                listofvector.append((k*((vectdiff(self.gnl[i].vector,negagrgnl,cout)[0]+vectdiff(self.gnl[i].vector,negagrgnl,cout)[1])/2))+((1-k)*i))
+            if self.gnl[i][whichcountry(country,self.gnl[i])][1]-self.gnl[i][whichcountry(country,self.gnl[i])][2]>0:
+                listofvector.append((k*((vectdiff(self.gnl[i],negagrgnl.vector,cout)[0]+vectdiff(self.gnl[i],negagrgnl.vector,cout)[1])/2))+((1-k)*i))
 
 
 
         for i in range(len(listofvector)):
             if listofvector[i]==min(listofvector):
-                #print((vectdiff(self.gnl[i].vector,negagrgnl,cout)[0]+vectdiff(self.gnl[i].vector,negagrgnl,cout)[1])/2,(1.2*(resor/10)*(len(self.gnl[i].vector)-len(cout))**0.5))
+                #print((vectdiff(self.gnl[i],negagrgnl,cout)[0]+vectdiff(self.gnl[i],negagrgnl,cout)[1])/2,(1.2*(resor/10)*(len(self.gnl[i])-len(cout))**0.5))
 
-                if (vectdiff(self.gnl[i].vector,negagrgnl,cout)[0]+vectdiff(self.gnl[i].vector,negagrgnl,cout)[1])/2<(10*(len(self.gnl[i].vector)-len(cout))):
+                if (vectdiff(self.gnl[i],negagrgnl.vector,cout)[0]+vectdiff(self.gnl[i],negagrgnl.vector,cout)[1])/2<(10*(len(self.gnl[i])-len(cout))):
                     self.isagreed=True
-                if ((vectdiff(self.gnl[i].vector,negagrgnl,cout)[0]+vectdiff(self.gnl[i].vector,negagrgnl,cout)[1])/2)>(1.6*(resor/10)*(len(self.gnl[i].vector)-len(cout))**0.5):
-                                                                                                                        #(resor/(len(self.gnl[i].vector)-len(cout)))):
+                if ((vectdiff(self.gnl[i],negagrgnl.vector,cout)[0]+vectdiff(self.gnl[i],negagrgnl.vector,cout)[1])/2)>(1.6*(resor/10)*(len(self.gnl[i])-len(cout))**0.5):
+                                                                                                                        #(resor/(len(self.gnl[i])-len(cout)))):
                     #-len(cout)
                     self.isout=True
-                if (vectdiff(self.gnl[i].vector,negagrgnl,cout)[0]+vectdiff(self.gnl[i].vector,negagrgnl,cout)[1])/2<(1.5*(resor/10)*(len(self.gnl[i].vector)-len(cout))**0.5):
+                if (vectdiff(self.gnl[i],negagrgnl.vector,cout)[0]+vectdiff(self.gnl[i],negagrgnl.vector,cout)[1])/2<(1.5*(resor/10)*(len(self.gnl[i])-len(cout))**0.5):
                     self.isregime=True
                 else:
                     self.isregime=False
@@ -278,12 +292,12 @@ class Country:
 
 
 def cycle(countries,resor):
-
+    
     countout=[]
     countoutn=[]
     for i in range(7):
 
-
+        print(i)
 
         negagrvec=0
 
@@ -298,24 +312,26 @@ def cycle(countries,resor):
 
             return True
             break
-
+        print(i,' 1')
         while True:
             dd=random.randint(0,len(countries)-1)
             
             if not countries[dd].isout:
                 break
-        
+        print(i,' 2')
         for g in countries:
 
             if i!=0:
-                negagrvec=g.decision(countries[dd].negotiator.vector,g,countoutn,resor)
+                negagrvec=g.decision(countries[dd].negotiator,g,countoutn,resor)
             g.negotiator=0
             g.initneg(negagrvec)
+        print(i,' 3')
         for g in range(len(countries)):
             if not countries[g] in countout:
                 if countries[g].isout:
                     countout.append(countries[g])
                     countoutn.append(g)
+        print(i,' 4')
 
 
 
@@ -323,25 +339,32 @@ def cycle(countries,resor):
             if g.isout:
                     #print('isout')
                     continue
-
+        print(i,' 5')
         while True:
 
             for g in range(len(countries)):
+                print(i, ' 5.5: ',g) 
+
                 for d in range(len(countries)):
+		    	
                     if d!=g and (not countries[d].isout) and (not countries[g].isout):
+                        
                         countries[g].communicate(countries)
 
-
+            print(i,' 5.5')
+            g_i=0
             for g in countries:
                 if (g.isout) |(len(g.negotiator.newg)==0)|(len(g.negotiator.newl)==0):
                     continue
+                g_i+=1
+                print(i, '6: ', g_i)
                 g.negotiator.ReplaceWithAverage()
                 g.negotiator.newg=[]
                 g.negotiator.newl=[]
             if isagreement(countries):
                 break
 
-
+        print(i,' 6')
     return False
 
 
@@ -354,7 +377,7 @@ vygody=[[]for c in range(number)]
 izdershki=[[]for c in range(number)]
 #ccc=['Canada','Sweden','Norway','USA','Iceland','Denmark','Finland','Russia']
 ccc=data['Country'].tolist()
-ss=150
+ss=1
 for s in range(ss):
     print('Список стран:')
     countries=[]
@@ -391,20 +414,23 @@ for s in range(ss):
     print('Результат:')
     sumofizderzhki=[]
     suofiz=0
+   # print(countries[resi].negotiator.vector)
     for i in range(len(countries[resi].negotiator.vector)):
         if countries[i].isout:
             print(i,'isout','isout')
             continue
-        print(ccc[i],'Выгоды:',countries[resi].negotiator.vector[i].gain,'Издержки:',countries[resi].negotiator.vector[i].loss)
-        vygody[i].append(countries[resi].negotiator.vector[i].gain)
-        izdershki[i].append(countries[resi].negotiator.vector[i].loss)
+        print(ccc[i],'Выгоды:',countries[resi].negotiator.vector[i][1],'Издержки:',countries[resi].negotiator.vector[i][2])
+        vygody[i].append(countries[resi].negotiator.vector[i][1])
+        izdershki[i].append(countries[resi].negotiator.vector[i][2])
         suofiz+=izdershki[i][len(izdershki[i])-1]
     sumofizderzhki.append(suofiz)
-    #for i in range (len(countries[resi].negotiator.vector)):
+    #for i in range (len(countries[resi].negotiator)):
         
 
     print('==================')
     #time.sleep(3)
+#print(vygody)
+#print(izdershki)
 for i in range (number):
     print(ccc[i],'Интерес:',countries[i].iner,'Позиция:',countries[i].pos)
    # print(len(vygody[i]))
