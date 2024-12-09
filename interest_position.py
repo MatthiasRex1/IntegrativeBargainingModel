@@ -11,12 +11,15 @@ for i in range(0,101,5):
     for d in range(num_of_iter):
         print(i,d)
         #print(
-        countries=[Country(50,i),Country(50,i)]
+        countries=[Country(40,50),Country(i,50)]
         for g in range(len(countries)):
             #d+=1
             countries[g].GNLvi(countries,len(countries)*100)
-            countries[g].sorted(countries[g])
-        cycle(countries,200)
+            #print(countries[g].gnl)
+            countries[g].gnl=countries[g].sorted(countries[g].gnl)
+            #print('----  \n',countries[g].gnl)
+            #assert False
+        bl=cycle(countries,200)
         resi=0
         for g in range(len(countries)):
            if not countries[g].isout:
@@ -30,13 +33,13 @@ for i in range(0,101,5):
             losses[g]+=countries[resi].negotiator.vector[g][2]
             #print(g,countries[resi].negotiator.vector[g][1],countries[resi].negotiator.vector[g][2])
     dic['interest'].append(i)
-    if outs[0]==num_of_iter:
+    if outs[0]==num_of_iter or bl==False:
         dic['gains_1'].append(0)
         dic['losses_1'].append(0)
     else:
         dic['losses_1'].append(losses[0]/(num_of_iter-outs[0]))
         dic['gains_1'].append(gains[0]/(num_of_iter-outs[0]))
-    if outs[1]==num_of_iter:
+    if outs[1]==num_of_iter or bl==False:
         dic['gains_2'].append(0)
         dic['losses_2'].append(0)
     else:
@@ -48,16 +51,23 @@ for i in range(0,101,5):
     dic['outs_2'].append(outs[1]/num_of_iter)
 
 #print
-pd.DataFrame(dic).to_csv('interest_dynamics.csv',sep=';',index=False)
-fil=open('interest_dynamics.csv','r')
+pd.DataFrame(dic).to_csv('position_dynamics.csv',sep=';',index=False)
+fil=open('position_dynamics.csv','r')
 st=fil.read().replace('.',',')
 fil.close()
-fil=open('interest_dynamics.csv','w')#.write(st).close()
+fil=open('position_dynamics.csv','w')#.write(st).close()
 fil.write(st)
 fil.close()
-plt.plot([c for c in range(0,101,5)],dic['gains_1'])
-plt.plot([c for c in range(0,101,5)],dic['gains_2'])
+plt.plot([c for c in range(0,len(dic['gains_1'])*5,5)],dic['gains_1'])
+plt.plot([c for c in range(0,len(dic['gains_1'])*5,5)],dic['gains_2'])
+plt.show()
+plt.plot([c for c in range(0,len(dic['losses_1'])*5,5)],dic['losses_1'])
+plt.plot([c for c in range(0,len(dic['losses_2'])*5,5)],dic['losses_2'])
 plt.show()    
+plt.plot([c for c in range(0,len(dic['outs_1'])*5,5)],dic['outs_1'])
+plt.plot([c for c in range(0,len(dic['outs_2'])*5,5)],dic['outs_2'])
+plt.show()    
+            
             
             
         

@@ -1,0 +1,3 @@
+Country;Interest;Position
+China;60;50
+Russia;70;50

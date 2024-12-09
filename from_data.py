@@ -2,13 +2,13 @@ import pandas as pd
 from model import Country,cycle
 
 
-data=pd.read_csv('data.csv',sep=';')
+data=pd.read_csv('climate.csv',sep=';')
 number=len(data['Country'].tolist())
 vygody=[[]for c in range(number)]
 izdershki=[[]for c in range(number)]
 #ccc=['Canada','Sweden','Norway','USA','Iceland','Denmark','Finland','Russia']
 ccc=data['Country'].tolist()
-ss=20
+ss=50
 for s in range(ss):
     print('Список стран:')
     countries=[]
@@ -26,7 +26,7 @@ for s in range(ss):
     for i in countries:
         d+=1
         i.GNLvi(countries,len(countries)*100)
-        i.sorted(i)
+        i.gnl=i.sorted(i.gnl)
     bl=False
     bl=cycle(countries,len(countries)*100)
     gainres=[]
@@ -85,4 +85,4 @@ for i in range(len(vygody)):
 print(sum(sumofizderzhki)/len(sumofizderzhki))
 dic={'country':ccc,'share of outs':outc,'min gain':vyvod[0],'max gain':vyvod[1],'avg gain':vyvod[2],'min loss':vyvod[3],'max loss':vyvod[4],'avg loss':vyvod[5],'diff gains and losses':vyvod[6]}
 datares=pd.DataFrame(dic)
-datares.to_csv('Results.csv',sep=';',index=False,encoding='utf-16le')
+datares.to_csv('climate_res.csv',sep=';',index=False,encoding='utf-16le')
